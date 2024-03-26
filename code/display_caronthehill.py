@@ -71,13 +71,13 @@ def save_caronthehill_image(position,speed,out_file=None,close=False):
    
     #Image loading
     if car is None:
-        car = pygame.image.load("car.png")
+        car = pygame.image.load("figures/car.png")
         car.convert_alpha()
         size_car = car.get_rect().size
         width_car = size_car[0]
         height_car = size_car[1]
     if pt is None:
-        pt = pygame.image.load("pine_tree.png")
+        pt = pygame.image.load("figures/pine_tree.png")
         pt.convert_alpha()
         size_pt = pt.get_rect().size
         width_pt = size_pt[0]
@@ -98,7 +98,7 @@ def save_caronthehill_image(position,speed,out_file=None,close=False):
     
     
     #Draw the background and the hill function altogether
-    if not checked and not os.path.isfile("background_"+str(CANVAS_WIDTH)+"_"+str(CANVAS_HEIGHT)+".png"):
+    if not checked and not os.path.isfile("figures/background_"+str(CANVAS_WIDTH)+"_"+str(CANVAS_HEIGHT)+".png"):
 
         #hill function plot
         points = list(np.arange(-1,1,step_hill)) 
@@ -120,12 +120,12 @@ def save_caronthehill_image(position,speed,out_file=None,close=False):
 
             surf.set_at((x, CANVAS_HEIGHT - y), color_hill)
             pix += 1
-        pygame.image.save(surf, "background_"+str(CANVAS_WIDTH)+"_"+str(CANVAS_HEIGHT)+".png")
+        pygame.image.save(surf, "figures/background_"+str(CANVAS_WIDTH)+"_"+str(CANVAS_HEIGHT)+".png")
         checked = True
         
     else: 
         if background is None:
-            background = pygame.image.load("background_"+str(CANVAS_WIDTH)+"_"+str(CANVAS_HEIGHT)+".png")
+            background = pygame.image.load("figures/background_"+str(CANVAS_WIDTH)+"_"+str(CANVAS_HEIGHT)+".png")
         surf.blit(background, (0,0))
         
 
