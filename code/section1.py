@@ -5,8 +5,7 @@
 
 ## IMPORTS
 import numpy as np
-import random
-random.seed(0)
+np.random.seed(0)
 
 ## CONSTANTS
 N = 10
@@ -24,6 +23,19 @@ DYNAMIC_STEP = int(TIME_STEP / INTEGRATION_STEP)
 
 ## FUNCTIONS
 def generate_trajectory(domain, agent, N):
+    """
+        This function generates a trajectory of N steps in the domain following the policy of the agent.
+        
+        Parameters
+        ----------
+        domain : Domain
+            The domain in which the agent evolves
+        agent : Agent
+            The agent that evolves in the domain
+        N : int
+            The number of steps of the trajectory
+    """
+
     p_prev = agent.init_p
     s_prev = agent.init_s
 
@@ -86,7 +98,7 @@ class Domain:
         
 class Agent:
     def __init__(self):
-        self.init_p = random.uniform(-0.1, 0.1)
+        self.init_p = np.random.uniform(-0.1, 0.1)
         self.init_s = 0
 
     def policy(self):
