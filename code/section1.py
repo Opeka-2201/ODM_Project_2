@@ -50,28 +50,94 @@ def generate_trajectory(domain, agent, N):
 
 ## CLASSES
 class Domain:
+    """
+    This class represents the domain in which the agent evolves.
+
+    Attributes
+    ----------
+    None
+    """
+
     def __init__(self):
         pass
 
     def hill(self, p):
+        """
+        This function computes the height of the hill at a given position.
+        
+        Parameters
+        ----------
+        p : float
+            The position of the agent
+        
+        Returns
+        -------
+        float
+            The height of the hill at the given position
+        """
         if p < 0:
             return p**2 + p
         else:
             return p / np.sqrt(1 + 5*p**2)
     
     def hill_prime(self, p):
+        """
+        This function computes the derivative of the height of the hill at a given position.
+        
+        Parameters
+        ----------
+        p : float
+            The position of the agent
+            
+        Returns
+        -------
+        float
+            The derivative of the height of the hill at the given position
+        """
         if p < 0:
             return 2*p + 1
         else:
             return 1 / (1 + 5*p**2)**(3/2)
         
     def hill_prime_prime(self, p):
+        """
+        This function computes the second derivative of the height of the hill at a given position.
+
+        Parameters
+        ----------
+        p : float
+            The position of the agent
+        
+        Returns
+        -------
+        float
+            The second derivative of the height of the hill at the given position
+        """
         if p < 0:
             return 2
         else:
             return -15*p / (1 + 5*p**2)**(5/2)
         
     def dynamics(self, p, s, u):
+        """
+        This function computes the next position and speed of the agent given his current position, speed and acceleration.
+        
+        Parameters
+        ----------
+        p : float
+            The position of the agent
+        s : float
+            The speed of the agent
+        u : int
+            The acceleration of the agent (-4 or 4)
+        
+        Returns
+        -------
+        float
+            The next position of the agent
+        float
+            The next speed of the agent
+        """
         if np.abs(p) > TERMINAL_P or np.abs(s) > TERMINAL_S:
             return p, s
         
@@ -88,6 +154,23 @@ class Domain:
         return p_next, s_next
     
     def reward(self, p, s, u):
+        """
+        This function computes the reward of the agent given his current position, speed and acceleration.
+        
+        Parameters
+        ----------
+        p : float
+            The position of the agent    
+        s : float
+            The speed of the agent
+        u : int
+            The acceleration of the agent (-4 or 4)
+            
+        Returns
+        -------
+        int
+            The reward of the agent (-1, 0 or 1)
+        """
         p_next, s_next = self.dynamics(p, s, u)
         if p_next < -TERMINAL_P or np.abs(s_next) > TERMINAL_S:
             return -1
@@ -97,12 +180,36 @@ class Domain:
             return 0
         
 class Agent:
-    def __init__(self):
+    """
+    This class represents an agent evolving in a continuous domain.
+    
+    Attributes
+    ----------
+    init_p : float
+        The initial position of the agent
+    init_s : float
+        The initial speed of the agent
+    randomized : bool
+        Whether the policy is randomized or fixed in acceleration
+    """
+    def __init__(self, randomized=False):
         self.init_p = np.random.uniform(-0.1, 0.1)
         self.init_s = 0
+        self.randomized = randomized
 
     def policy(self):
-        return U[1]
+        """
+        This function returns the acceleration of the agent using his behavior.
+        
+        Returns
+        -------
+        int
+            The acceleration of the agent (-4 or 4)
+        """
+        if self.randomized:
+            return np.random.uniform(U[0], U[1])
+        else:
+            return U[1]
     
 ## MAIN
 def main():
