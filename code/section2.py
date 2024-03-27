@@ -23,16 +23,21 @@ from section1 import Domain, Agent
 ## FUNCTIONS
 def expected_return_continuous(Domain, Agent, N):
     """
-    This function computes the expected return of a policy over N steps in the continuous domain.
+        This function computes the expected return of a policy over N steps in the continuous domain.
 
-    Parameters
-    ----------
-    Domain : Domain
-        The domain in which the agent evolves
-    Agent : Agent
-        The agent that evolves in the domain
-    N : int
-        The number of steps of the trajectory
+        Parameters
+        ----------
+        Domain : Domain
+            The domain in which the agent evolves
+        Agent : Agent
+            The agent that evolves in the domain
+        N : int
+            The number of steps of the trajectory
+        
+        Returns
+        ----------
+        J_N : np.array
+            The expected return of the policy over N steps
     """
     p = np.random.uniform(-0.1, 0.1)
     s = 0
@@ -57,18 +62,23 @@ def expected_return_continuous(Domain, Agent, N):
 
 def monte_carlo_simulations_continuous(Domain, Agent, nb_initial_states, N):
     """
-    This function computes the expected return of a policy over N steps in the continuous domain by averaging over several initial states.
+        This function computes the expected return of a policy over N steps in the continuous domain by averaging over several initial states.
 
-    Parameters
-    ----------
-    Domain : Domain
-        The domain in which the agent evolves
-    Agent : Agent
-        The agent that evolves in the domain
-    nb_initial_states : int
-        The number of initial states to average the expected return over
-    N : int
-        The number of steps of the trajectory
+        Parameters
+        ----------
+        Domain : Domain
+            The domain in which the agent evolves
+        Agent : Agent
+            The agent that evolves in the domain
+        nb_initial_states : int
+            The number of initial states to average the expected return over
+        N : int
+            The number of steps of the trajectory
+        
+        Returns
+        ----------
+        J_N : np.array
+            The expected return of the policy over N steps averaged over nb_initial_states initial states
     """
     J_N = np.zeros(N)
     for _ in range(nb_initial_states):

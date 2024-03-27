@@ -21,6 +21,22 @@ from section1 import Domain, Agent
 
 ## FUNCTIONS
 def generate_gif(Domain, Agent, N):
+    """
+        This function generates a gif of the car on the hill for N steps following the policy of the agent.
+        
+        Parameters
+        ----------
+        Domain : Domain
+            The domain in which the agent evolves
+        Agent : Agent
+            The agent that evolves in the domain
+        N : int
+            The number of steps of the trajectory
+        
+        Returns
+        ----------
+        None
+    """
     filename = f"figures/car_visualization_{N}_{RANDOMIZED}.gif"
     images = []
 

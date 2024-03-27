@@ -34,6 +34,10 @@ def generate_trajectory(domain, agent, N):
             The agent that evolves in the domain
         N : int
             The number of steps of the trajectory
+        
+        Returns
+        ----------
+        None
     """
 
     p_prev = agent.init_p
@@ -51,11 +55,11 @@ def generate_trajectory(domain, agent, N):
 ## CLASSES
 class Domain:
     """
-    This class represents the domain in which the agent evolves.
+        This class represents the domain in which the agent evolves.
 
-    Attributes
-    ----------
-    None
+        Attributes
+        ----------
+        None
     """
 
     def __init__(self):
@@ -63,17 +67,17 @@ class Domain:
 
     def hill(self, p):
         """
-        This function computes the height of the hill at a given position.
-        
-        Parameters
-        ----------
-        p : float
-            The position of the agent
-        
-        Returns
-        -------
-        float
-            The height of the hill at the given position
+            This function computes the height of the hill at a given position.
+            
+            Parameters
+            ----------
+            p : float
+                The position of the agent
+            
+            Returns
+            -------
+            float
+                The height of the hill at the given position
         """
         if p < 0:
             return p**2 + p
@@ -82,17 +86,17 @@ class Domain:
     
     def hill_prime(self, p):
         """
-        This function computes the derivative of the height of the hill at a given position.
-        
-        Parameters
-        ----------
-        p : float
-            The position of the agent
+            This function computes the derivative of the height of the hill at a given position.
             
-        Returns
-        -------
-        float
-            The derivative of the height of the hill at the given position
+            Parameters
+            ----------
+            p : float
+                The position of the agent
+                
+            Returns
+            -------
+            float
+                The derivative of the height of the hill at the given position
         """
         if p < 0:
             return 2*p + 1
@@ -101,17 +105,17 @@ class Domain:
         
     def hill_prime_prime(self, p):
         """
-        This function computes the second derivative of the height of the hill at a given position.
+            This function computes the second derivative of the height of the hill at a given position.
 
-        Parameters
-        ----------
-        p : float
-            The position of the agent
-        
-        Returns
-        -------
-        float
-            The second derivative of the height of the hill at the given position
+            Parameters
+            ----------
+            p : float
+                The position of the agent
+            
+            Returns
+            -------
+            float
+                The second derivative of the height of the hill at the given position
         """
         if p < 0:
             return 2
@@ -120,23 +124,23 @@ class Domain:
         
     def dynamics(self, p, s, u):
         """
-        This function computes the next position and speed of the agent given his current position, speed and acceleration.
-        
-        Parameters
-        ----------
-        p : float
-            The position of the agent
-        s : float
-            The speed of the agent
-        u : int
-            The acceleration of the agent (-4 or 4)
-        
-        Returns
-        -------
-        float
-            The next position of the agent
-        float
-            The next speed of the agent
+            This function computes the next position and speed of the agent given his current position, speed and acceleration.
+            
+            Parameters
+            ----------
+            p : float
+                The position of the agent
+            s : float
+                The speed of the agent
+            u : int
+                The acceleration of the agent (-4 or 4)
+            
+            Returns
+            -------
+            p_next : float
+                The next position of the agent
+            s_next : float
+                The next speed of the agent
         """
         if np.abs(p) > TERMINAL_P or np.abs(s) > TERMINAL_S:
             return p, s
@@ -155,21 +159,21 @@ class Domain:
     
     def reward(self, p, s, u):
         """
-        This function computes the reward of the agent given his current position, speed and acceleration.
-        
-        Parameters
-        ----------
-        p : float
-            The position of the agent    
-        s : float
-            The speed of the agent
-        u : int
-            The acceleration of the agent (-4 or 4)
+            This function computes the reward of the agent given his current position, speed and acceleration.
             
-        Returns
-        -------
-        int
-            The reward of the agent (-1, 0 or 1)
+            Parameters
+            ----------
+            p : float
+                The position of the agent    
+            s : float
+                The speed of the agent
+            u : int
+                The acceleration of the agent (-4 or 4)
+                
+            Returns
+            -------
+            int
+                The reward of the agent (-1, 0 or 1)
         """
         p_next, s_next = self.dynamics(p, s, u)
         if p_next < -TERMINAL_P or np.abs(s_next) > TERMINAL_S:
@@ -181,16 +185,16 @@ class Domain:
         
 class Agent:
     """
-    This class represents an agent evolving in a continuous domain.
-    
-    Attributes
-    ----------
-    init_p : float
-        The initial position of the agent
-    init_s : float
-        The initial speed of the agent
-    randomized : bool
-        Whether the policy is randomized or fixed in acceleration
+        This class represents an agent evolving in a continuous domain.
+        
+        Attributes
+        ----------
+        init_p : float
+            The initial position of the agent
+        init_s : float
+            The initial speed of the agent
+        randomized : bool
+            Whether the policy is randomized or fixed in acceleration
     """
     def __init__(self, randomized=False):
         self.init_p = np.random.uniform(-0.1, 0.1)
@@ -199,12 +203,12 @@ class Agent:
 
     def policy(self):
         """
-        This function returns the acceleration of the agent using his behavior.
-        
-        Returns
-        -------
-        int
-            The acceleration of the agent (-4 or 4)
+            This function returns the acceleration of the agent using his behavior.
+            
+            Returns
+            -------
+            int
+                The acceleration of the agent (-4 or 4)
         """
         if self.randomized:
             return np.random.uniform(U[0], U[1])
