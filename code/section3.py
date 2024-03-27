@@ -37,7 +37,7 @@ def generate_gif(Domain, Agent, N):
         ----------
         None
     """
-    filename = f"figures/car_visualization_{N}_{RANDOMIZED}.gif"
+    filename = f"figures/section3/car_{N}_randomized_{RANDOMIZED}.gif"
     images = []
 
     p = Agent.init_p

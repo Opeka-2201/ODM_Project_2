@@ -97,7 +97,7 @@ def main():
     plt.xlabel("Time step")
     plt.ylabel(f"Expected return over {NB_INITIAL_STATES} simulations")
     plt.title(r"Evolution of $J^{\mu}_{" + str(N) + "}$ over " + str(NB_INITIAL_STATES) + " simulations for a " + ("random" if agent.randomized else "always accelerate") + " policy")
-    plt.savefig("figures/expected_return_" + str(NB_INITIAL_STATES) + "_states_over_" + str(N) + "_steps_" + ("random" if agent.randomized else "accelerate") + ".png")
+    plt.savefig("figures/section2/expected_return_" + str(NB_INITIAL_STATES) + "_states_over_" + str(N) + "_steps_" + ("random" if agent.randomized else "accelerate") + ".png")
 
 if __name__ == "__main__":
     main()

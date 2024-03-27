@@ -16,11 +16,10 @@ from tqdm import tqdm
 
 ## CONSTANTS
 RANDOM_STATE = 0
-EPOCHS = 50
+EPOCHS = 60
 NB_SAMPLES = 100
 TECHNIQUE = "full"
 BOUND = 0.01
-GRID_SIZE = 200
 N = 500
 
 ## IMPORTS FROM OTHER SECTIONS
@@ -37,35 +36,30 @@ from display_caronthehill import save_caronthehill_image
 ## FUNCTIONS
 def generate_model(model_type, inputs, outputs):
     """
-        Generate a model based on the type of model given as input and fit it with the inputs and outputs.
+        Generate a model based on the type of model given as input
 
         Parameters:
         ------------
         model_type : str
             The type of model to generate
-        inputs : np.array
-            The inputs to fit the model
-        outputs : np.array
-            The outputs to fit the model
             
         Returns:
         ------------
         model : model
-            The model generated and fitted
+            The model generated
     """
     if model_type == "linear_regression":
         model = LinearRegression()
     elif model_type == "extra_trees":
-        model = ExtraTreesRegressor(n_estimators=10, random_state=RANDOM_STATE)
+        model = ExtraTreesRegressor(n_estimators=20, random_state=RANDOM_STATE)
     elif model_type == "neural_network":
-        model = MLPRegressor(hidden_layer_sizes=(100, 100), max_iter=1000, random_state=RANDOM_STATE)
+        model = MLPRegressor(hidden_layer_sizes=(20, 20, 20, 10), max_iter=1000, random_state=RANDOM_STATE, activation="tanh")
     else:
         raise ValueError("Model type not recognized")
-
-    inputs = inputs.reshape(-1, 3)
-    outputs = outputs.ravel()
-
-    model.fit(inputs, outputs)
+    
+    if inputs is not None and outputs is not None:
+        model.fit(inputs, outputs)
+    
     return model
 
 def generate_osst(agent, domain, epochs, nb_samples, technique="reduced"):
@@ -173,7 +167,7 @@ def fitted_q_iteration(model_type, osst, stop_criterion_mode, bound):
             The model generated
     """
     N = 0
-    model = 0
+    model = generate_model(model_type, None, None)
     model_prev = 0
 
     print(f"Generating model with {model_type}, stop criterion mode {stop_criterion_mode} and bound {bound}...")
@@ -196,7 +190,7 @@ def fitted_q_iteration(model_type, osst, stop_criterion_mode, bound):
             outputs.append(r + DISCOUNT_FACTOR * fetch_max)
         
         model_prev = model
-        model = generate_model(model_type, np.array(inputs), np.array(outputs))
+        model = generate_model(model_type, np.array(inputs).reshape(-1, 3), np.array(outputs).ravel())
     
     print(f"Model generated after {N} iterations")
     return model
@@ -285,7 +279,7 @@ def generate_gif(domain, model, N, model_type):
         ------------
         None
     """
-    filename = f"figures/car_visualization_{N}_{model_type}.gif"
+    filename = f"figures/section4/gifs/car_{N}_{model_type}.gif"
     images = []
 
     p = np.random.uniform(-0.1, 0.1)
@@ -320,9 +314,9 @@ def generate_result_plots(model, model_type):
         ------------
         None
     """
-    p_range = np.linspace(-TERMINAL_P, TERMINAL_P, GRID_SIZE)
-    s_range = np.linspace(-TERMINAL_S, TERMINAL_S, GRID_SIZE)
-    Q = np.zeros((GRID_SIZE, GRID_SIZE, len(U)))
+    p_range = np.arange(-TERMINAL_P, TERMINAL_P, 0.01)
+    s_range = np.arange(-TERMINAL_S, TERMINAL_S, 0.01)
+    Q = np.zeros((len(p_range), len(s_range), 2))
     x, y = np.meshgrid(p_range, s_range)
 
     for i, p in enumerate(p_range):
@@ -339,7 +333,7 @@ def generate_result_plots(model, model_type):
     ax.set_title(f"Value function for u = {str(U[0])}")
     ax.set_xlabel("Position")
     ax.set_ylabel("Speed")
-    plt.savefig(f"figures/value_function_{model_type}_u_{str(U[0])}.png")
+    plt.savefig(f"figures/section4/value_function/{model_type}_u_{str(U[0])}.png")
     plt.close()
 
     map_1 = Q[:, :, 1].T
@@ -351,7 +345,7 @@ def generate_result_plots(model, model_type):
     ax.set_title(f"Value function for u = {str(U[1])}")
     ax.set_xlabel("Position")
     ax.set_ylabel("Speed")
-    plt.savefig(f"figures/value_function_{model_type}_u_{str(U[1])}.png")
+    plt.savefig(f"figures/section4/value_function/{model_type}_u_{str(U[1])}.png")
     plt.close()
 
     optimal = np.argmax(Q, axis=2)
@@ -363,7 +357,7 @@ def generate_result_plots(model, model_type):
     ax.set_title("Optimal policy")
     ax.set_xlabel("Position")
     ax.set_ylabel("Speed")
-    plt.savefig(f"figures/optimal_policy_{model_type}.png")
+    plt.savefig(f"figures/section4/optimal/{model_type}.png")
     plt.close()
 
 ## MAIN
@@ -372,20 +366,22 @@ def main():
     agent = Agent(randomized=True)
     osst = generate_osst(agent, domain, EPOCHS, NB_SAMPLES, technique=TECHNIQUE)
 
-    print("### LINEAR REGRESSION ###")
+    print("\n### LINEAR REGRESSION ###")
     model_linear = fitted_q_iteration("linear_regression", osst, 2, BOUND)
     generate_result_plots(model_linear, "linear_regression")
-    print(f"Expected return with linear regression: {monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_linear)}")
+    print(f"Expected return with linear regression: {monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_linear)[-1]}")
     generate_gif(domain, model_linear, N, "linear_regression")
 
+    print("\n### EXTRA TREES ###")
     model_trees = fitted_q_iteration("extra_trees", osst, 2, BOUND)
     generate_result_plots(model_trees, "extra_trees")
-    print(f"Expected return with extra trees: {monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_trees)}")
+    print(f"Expected return with extra trees: {monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_trees)[-1]}")
     generate_gif(domain, model_trees, N, "extra_trees")
 
+    print("\n### NEURAL NETWORK ###")
     model_nn = fitted_q_iteration("neural_network", osst, 2, BOUND)
     generate_result_plots(model_nn, "neural_network")
-    print(f"Expected return with neural network: {monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_nn)}")
+    print(f"Expected return with neural network: {monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_nn)[-1]}")
     generate_gif(domain, model_nn, N, "neural_network")
 
 if __name__ == "__main__":

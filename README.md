@@ -14,4 +14,3 @@ This project is part of the course of Optimal Decision Making for Complex Proble
 - Section 2: Expected Return of a Policy in a Continuous Domain [section2.py](./code/section2.py)
 - Section 3: Visualization [section3.py](./code/section3.py)
 - Section 4: Fitted-Q Iteration [section4.py](./code/section4.py)
-- Section 5: Parametric Q-Learning [section5.py](./code/section5.py)
