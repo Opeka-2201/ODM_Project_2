@@ -44,11 +44,11 @@ def generate_trajectory(domain, agent, N):
     s_prev = agent.init_s
 
     print("Generating trajectory...")
-    for t in range(N+1):
+    for n in range(N+1):
         u = agent.policy()
+        r = domain.reward(p_prev, s_prev, u)
         p_next, s_next = domain.dynamics(p_prev, s_prev, u)
-        r = domain.reward(p_next, s_next, u)
-        print(f"(x_{t} = ({p_prev:.4f}, {s_prev:.4f}), u_{t} = {u}, r_{t} = {r}, x_{t+1} = ({p_next:.3f}, {s_next:.3f}))")
+        print(f"(x_{n} = ({p_prev:.4f}, {s_prev:.4f}), u_{n} = {u}, r_{n} = {r}, x_{n+1} = ({p_next:.4f}, {s_next:.4f}))")
         p_prev = p_next
         s_prev = s_next
 
