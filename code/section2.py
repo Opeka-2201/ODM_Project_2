@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 ## CONSTANTS
 N = 500
-NB_INITIAL_STATES = 100
+NB_INITIAL_STATES = 50
 RANDOMIZED = False # Change this to True to use a randomized policy instead of the always accelerate policy
 
 ## IMPORTS FROM OTHER SECTIONS
@@ -86,8 +86,8 @@ def main():
     plt.plot(J_N)
     plt.xlabel("Time step")
     plt.ylabel(f"Expected return over {NB_INITIAL_STATES} simulations")
-    plt.title(r"Evolution of $J^{\mu}_{" + str(N) + "}$ over " + str(NB_INITIAL_STATES) + " simulations for a " + "random" if agent.random else "always accelerate" + " policy")
-    plt.savefig("figures/expected_return_" + str(NB_INITIAL_STATES) + "_states_over_" + str(N) + "_steps_" + ("random" if agent.random else "accelerate") + ".png")
+    plt.title(r"Evolution of $J^{\mu}_{" + str(N) + "}$ over " + str(NB_INITIAL_STATES) + " simulations for a " + ("random" if agent.randomized else "always accelerate") + " policy")
+    plt.savefig("figures/expected_return_" + str(NB_INITIAL_STATES) + "_states_over_" + str(N) + "_steps_" + ("random" if agent.randomized else "accelerate") + ".png")
 
 if __name__ == "__main__":
     main()
