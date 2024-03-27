@@ -36,6 +36,23 @@ from display_caronthehill import save_caronthehill_image
 
 ## FUNCTIONS
 def generate_model(model_type, inputs, outputs):
+    """
+        Generate a model based on the type of model given as input and fit it with the inputs and outputs.
+
+        Parameters:
+        ------------
+        model_type : str
+            The type of model to generate
+        inputs : np.array
+            The inputs to fit the model
+        outputs : np.array
+            The outputs to fit the model
+            
+        Returns:
+        ------------
+        model : model
+            The model generated and fitted
+    """
     if model_type == "linear_regression":
         model = LinearRegression()
     elif model_type == "extra_trees":
@@ -52,6 +69,27 @@ def generate_model(model_type, inputs, outputs):
     return model
 
 def generate_osst(agent, domain, epochs, nb_samples, technique="reduced"):
+    """
+        Generate the observed state, state, action, reward, next state tuples.
+        
+        Parameters:
+        ------------
+        agent : Agent
+            The agent that evolves in the domain
+        domain : Domain
+            The domain in which the agent evolves
+        epochs : int
+            The number of epochs to generate the data
+        nb_samples : int
+            The number of samples to generate at each epoch
+        technique : str
+            The technique to generate the initial position (reduced space or full space)
+        
+        Returns:
+        ------------
+        ostt : list
+            The observed state, state, action, reward, next state tuples
+    """
     ostt = []
     for _ in range(epochs):
         p = np.random.uniform(-1, 1) if technique == "full" else np.random.uniform(-0.1, 0.1)
@@ -69,6 +107,29 @@ def generate_osst(agent, domain, epochs, nb_samples, technique="reduced"):
     return ostt
 
 def stop_criterion(model, model_prev, N, bound, osst, mode):
+    """
+        Check if the stop criterion is met.
+        
+        Parameters:
+        ------------
+        model : model
+            The current model
+        model_prev : model
+            The previous model    
+        N : int
+            The current iteration
+        bound : float
+            The bound to check the stop criterion
+        osst : list
+            The observed state, state, action, reward, next state tuples
+        mode : int
+            The mode of the stop criterion
+        
+        Returns:
+        ------------
+        bool
+            Whether the stop criterion is met
+    """
     if mode == 1:
         if N == 0 or N == 1:
             return False
@@ -92,6 +153,25 @@ def stop_criterion(model, model_prev, N, bound, osst, mode):
         raise ValueError("Mode not recognized")
     
 def fitted_q_iteration(model_type, osst, stop_criterion_mode, bound):
+    """
+        Perform the Fitted Q-Iteration algorithm to generate a model.
+    
+        Parameters:
+        ------------
+        model_type : str
+            The type of model to generate
+        osst : list
+            The observed state, state, action, reward, next state tuples
+        stop_criterion_mode : int
+            The mode of the stop criterion
+        bound : float
+            The bound to check the stop criterion
+        
+        Returns:
+        ------------
+        model : model
+            The model generated
+    """
     N = 0
     model = 0
     model_prev = 0
@@ -122,6 +202,23 @@ def fitted_q_iteration(model_type, osst, stop_criterion_mode, bound):
     return model
 
 def expected_return_continuous(domain, N, model):
+    """
+        This function computes the expected return of a policy over N steps in the continuous domain.
+    
+        Parameters:
+        ------------
+        domain : Domain
+            The domain in which the agent evolves
+        N : int
+            The number of steps of the trajectory
+        model : model
+            The model to use to predict the best action
+            
+        Returns:
+        ------------
+        J_N : np.array
+            The expected return of the policy over N steps
+    """
     p = np.random.uniform(-0.1, 0.1)
     s = 0
     J = 0
@@ -144,6 +241,25 @@ def expected_return_continuous(domain, N, model):
     return J_N
 
 def monte_carlo_simulations_continuous(domain, nb_initial_states, N, model):
+    """
+        This function computes the expected return of a policy over N steps in the continuous domain by averaging over several initial states.
+    
+        Parameters:
+        ------------
+        domain : Domain
+            The domain in which the agent evolves
+        nb_initial_states : int
+            The number of initial states to average the expected return over
+        N : int
+            The number of steps of the trajectory
+        model : model
+            The model to use to predict the best action
+        
+        Returns:
+        ------------
+        J_N : np.array
+            The expected return of the policy over N steps averaged over nb_initial_states initial states
+    """
     J_N = np.zeros(N)
     for _ in range(nb_initial_states):
         J_N += expected_return_continuous(domain, N, model)
@@ -151,6 +267,24 @@ def monte_carlo_simulations_continuous(domain, nb_initial_states, N, model):
     return J_N
 
 def generate_gif(domain, model, N, model_type):
+    """
+        Generate a gif of the car evolving in the domain with the model.
+        
+        Parameters:
+        ------------
+        domain : Domain
+            The domain in which the agent evolves
+        model : model
+            The model to use to predict the best action
+        N : int
+            The number of steps of the trajectory
+        model_type : str
+            The type of model to generate
+            
+        Returns:
+        ------------
+        None
+    """
     filename = f"figures/car_visualization_{N}_{model_type}.gif"
     images = []
 
@@ -172,6 +306,20 @@ def generate_gif(domain, model, N, model_type):
     imageio.mimsave(filename, images)
 
 def generate_result_plots(model, model_type):
+    """
+        Generate the result plots for the model.
+    
+        Parameters:
+        ------------
+        model : model
+            The model to use to predict the best action
+        model_type : str
+            The type of model to generate
+        
+        Returns:
+        ------------
+        None
+    """
     p_range = np.linspace(-TERMINAL_P, TERMINAL_P, GRID_SIZE)
     s_range = np.linspace(-TERMINAL_S, TERMINAL_S, GRID_SIZE)
     Q = np.zeros((GRID_SIZE, GRID_SIZE, len(U)))
@@ -224,11 +372,11 @@ def main():
     agent = Agent(randomized=True)
     osst = generate_osst(agent, domain, EPOCHS, NB_SAMPLES, technique=TECHNIQUE)
 
-    # print("### LINEAR REGRESSION ###")
-    # model_linear = fitted_q_iteration("linear_regression", osst, 2, BOUND)
-    # generate_result_plots(model_linear, "linear_regression")
-    # print(f"Expected return with linear regression: {monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_linear)}")
-    # generate_gif(domain, model_linear, N, "linear_regression")
+    print("### LINEAR REGRESSION ###")
+    model_linear = fitted_q_iteration("linear_regression", osst, 2, BOUND)
+    generate_result_plots(model_linear, "linear_regression")
+    print(f"Expected return with linear regression: {monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_linear)}")
+    generate_gif(domain, model_linear, N, "linear_regression")
 
     model_trees = fitted_q_iteration("extra_trees", osst, 2, BOUND)
     generate_result_plots(model_trees, "extra_trees")
