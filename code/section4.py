@@ -19,7 +19,8 @@ import csv
 RANDOM_STATE = 0
 EPOCHS = 60
 NB_SAMPLES = 100
-BOUND = 0.01
+BOUND_MODE_1 = 0.005
+BOUND_MODE_2 = 0.05
 N = 500
 
 ## IMPORTS FROM OTHER SECTIONS
@@ -56,9 +57,9 @@ def generate_model(model, model_type, inputs, outputs):
         if model_type == "linear_regression":
             model = LinearRegression()
         elif model_type == "extra_trees":
-            model = ExtraTreesRegressor(n_estimators=20, random_state=RANDOM_STATE)
+            model = ExtraTreesRegressor(n_estimators=10, random_state=RANDOM_STATE)
         elif model_type == "neural_network":
-            model = MLPRegressor(hidden_layer_sizes=(10, 15, 20, 15, 10), max_iter=1000, random_state=RANDOM_STATE, activation="tanh")
+            model = MLPRegressor(hidden_layer_sizes=(16, 32, 64, 32, 16, 8), max_iter=1000, random_state=RANDOM_STATE, activation="tanh")
         else:
             raise ValueError("Model type not recognized")
         
@@ -141,7 +142,7 @@ def stop_criterion(model, model_prev, N, osst, mode):
         predictions_model = np.array(predictions_model)
         predictions_prev = np.array(predictions_prev)
 
-        return np.linalg.norm(predictions_model - predictions_prev)
+        return np.linalg.norm(predictions_model - predictions_prev, ord=np.inf)
     
     elif mode == 2:
         Br = 1
@@ -200,7 +201,7 @@ def fitted_q_iteration(model_type, osst, stop_criterion_mode, bound):
         if N > 2:
             criterion = stop_criterion(model, model_prev, N, osst, stop_criterion_mode)
     
-    print(f"Model generated after {N} iterations")
+    print(f"Model generated after {N} iterations", end="")
     return model
 
 def expected_return_continuous(domain, N, model):
@@ -300,11 +301,11 @@ def generate_gif(domain, model, N, model_type, stop_criterion_mode, generation_m
     for n in tqdm(range(N)):
         subfile = f"figures/gif/{model_type}/{n+1}_{N}.jpg"
 
-        p = min(max(-TERMINAL_P, p), TERMINAL_P)
-        s = min(max(-TERMINAL_S, s), TERMINAL_S)
-
         save_caronthehill_image(p, s, subfile)
         images.append(imageiov3.imread(subfile))
+
+        if np.abs(p) > TERMINAL_P or np.abs(s) > TERMINAL_S:
+            break
 
         u = max(U, key=lambda u: model.predict(np.array([[p, s, u]]))[0])
         p, s = domain.dynamics(p, s, u)
@@ -410,28 +411,28 @@ def main():
     osst_reduced = generate_osst(agent, domain, EPOCHS, NB_SAMPLES, technique="reduced")
 
     print("\n### LINEAR REGRESSION STOP CRITERION 1 AND REDUCED SPACE ###")
-    model_linear_1_reduced = fitted_q_iteration("linear_regression", osst_reduced, 1, BOUND)
+    model_linear_1_reduced = fitted_q_iteration("linear_regression", osst_reduced, 1, BOUND_MODE_1)
     generate_result_plots(model_linear_1_reduced, "linear_regression", 1, "reduced")
     J_linear_1_reduced = monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_linear_1_reduced)
     print(f"Expected return with linear regression: {J_linear_1_reduced[-1]}")
     generate_gif(domain, model_linear_1_reduced, N, "linear_regression", 1, "reduced")
 
     print("\n### LINEAR REGRESSION STOP CRITERION 1 AND FULL SPACE ###")
-    model_linear_1_full = fitted_q_iteration("linear_regression", osst_full, 1, BOUND)
+    model_linear_1_full = fitted_q_iteration("linear_regression", osst_full, 1, BOUND_MODE_1)
     generate_result_plots(model_linear_1_full, "linear_regression", 1, "full")
     J_linear_1_full = monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_linear_1_full)
     print(f"Expected return with linear regression: {J_linear_1_full[-1]}")
     generate_gif(domain, model_linear_1_full, N, "linear_regression", 1, "full")
 
     print("\n### LINEAR REGRESSION STOP CRITERION 2 AND REDUCED SPACE ###")
-    model_linear_2_reduced = fitted_q_iteration("linear_regression", osst_reduced, 2, BOUND)
+    model_linear_2_reduced = fitted_q_iteration("linear_regression", osst_reduced, 2, BOUND_MODE_2)
     generate_result_plots(model_linear_2_reduced, "linear_regression", 2, "reduced")
     J_linear_2_reduced = monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_linear_2_reduced)
     print(f"Expected return with linear regression: {J_linear_2_reduced[-1]}")
     generate_gif(domain, model_linear_2_reduced, N, "linear_regression", 2, "reduced")
 
     print("\n### LINEAR REGRESSION STOP CRITERION 2 AND FULL SPACE ###")
-    model_linear_2_full = fitted_q_iteration("linear_regression", osst_full, 2, BOUND)
+    model_linear_2_full = fitted_q_iteration("linear_regression", osst_full, 2, BOUND_MODE_2)
     generate_result_plots(model_linear_2_full, "linear_regression", 2, "full")
     J_linear_2_full = monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_linear_2_full)
     print(f"Expected return with linear regression: {J_linear_2_full[-1]}")
@@ -447,28 +448,28 @@ def main():
     dump_expected_returns(expected_returns_linear, "linear_regression")
 
     print("\n### EXTRA TREES STOP CRITERION 1 AND REDUCED SPACE ###")
-    model_extra_trees_1_reduced = fitted_q_iteration("extra_trees", osst_reduced, 1, BOUND)
+    model_extra_trees_1_reduced = fitted_q_iteration("extra_trees", osst_reduced, 1, BOUND_MODE_1)
     generate_result_plots(model_extra_trees_1_reduced, "extra_trees", 1, "reduced")
     J_extra_trees_1_reduced = monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_extra_trees_1_reduced)
     print(f"Expected return with extra trees: {J_extra_trees_1_reduced[-1]}")
     generate_gif(domain, model_extra_trees_1_reduced, N, "extra_trees", 1, "reduced")
     
     print("\n### EXTRA TREES STOP CRITERION 1 AND FULL SPACE ###")
-    model_extra_trees_1_full = fitted_q_iteration("extra_trees", osst_full, 1, BOUND)
+    model_extra_trees_1_full = fitted_q_iteration("extra_trees", osst_full, 1, BOUND_MODE_1)
     generate_result_plots(model_extra_trees_1_full, "extra_trees", 1, "full")
     J_extra_trees_1_full = monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_extra_trees_1_full)
     print(f"Expected return with extra trees: {J_extra_trees_1_full[-1]}")
     generate_gif(domain, model_extra_trees_1_full, N, "extra_trees", 1, "full")
     
     print("\n### EXTRA TREES STOP CRITERION 2 AND REDUCED SPACE ###")
-    model_extra_trees_2_reduced = fitted_q_iteration("extra_trees", osst_reduced, 2, BOUND)
+    model_extra_trees_2_reduced = fitted_q_iteration("extra_trees", osst_reduced, 2, BOUND_MODE_2)
     generate_result_plots(model_extra_trees_2_reduced, "extra_trees", 2, "reduced")
     J_extra_trees_2_reduced = monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_extra_trees_2_reduced)
     print(f"Expected return with extra trees: {J_extra_trees_2_reduced[-1]}")
     generate_gif(domain, model_extra_trees_2_reduced, N, "extra_trees", 2, "reduced")
     
     print("\n### EXTRA TREES STOP CRITERION 2 AND FULL SPACE ###")
-    model_extra_trees_2_full = fitted_q_iteration("extra_trees", osst_full, 2, BOUND)
+    model_extra_trees_2_full = fitted_q_iteration("extra_trees", osst_full, 2, BOUND_MODE_2)
     generate_result_plots(model_extra_trees_2_full, "extra_trees", 2, "full")
     J_extra_trees_2_full = monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_extra_trees_2_full)
     print(f"Expected return with extra trees: {J_extra_trees_2_full[-1]}")
@@ -484,28 +485,28 @@ def main():
     dump_expected_returns(expected_returns_extra_trees, "extra_trees")
 
     print("\n### NEURAL NETWORK STOP CRITERION 1 AND REDUCED SPACE ###")
-    model_neural_network_1_reduced = fitted_q_iteration("neural_network", osst_reduced, 1, BOUND)
+    model_neural_network_1_reduced = fitted_q_iteration("neural_network", osst_reduced, 1, BOUND_MODE_1)
     generate_result_plots(model_neural_network_1_reduced, "neural_network", 1, "reduced")
     J_neural_network_1_reduced = monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_neural_network_1_reduced)
     print(f"Expected return with neural network: {J_neural_network_1_reduced[-1]}")
     generate_gif(domain, model_neural_network_1_reduced, N, "neural_network", 1, "reduced")
     
     print("\n### NEURAL NETWORK STOP CRITERION 1 AND FULL SPACE ###")
-    model_neural_network_1_full = fitted_q_iteration("neural_network", osst_full, 1, BOUND)
+    model_neural_network_1_full = fitted_q_iteration("neural_network", osst_full, 1, BOUND_MODE_1)
     generate_result_plots(model_neural_network_1_full, "neural_network", 1, "full")
     J_neural_network_1_full = monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_neural_network_1_full)
     print(f"Expected return with neural network: {J_neural_network_1_full[-1]}")
     generate_gif(domain, model_neural_network_1_full, N, "neural_network", 1, "full")
     
     print("\n### NEURAL NETWORK STOP CRITERION 2 AND REDUCED SPACE ###")
-    model_neural_network_2_reduced = fitted_q_iteration("neural_network", osst_reduced, 2, BOUND)
+    model_neural_network_2_reduced = fitted_q_iteration("neural_network", osst_reduced, 2, BOUND_MODE_2)
     generate_result_plots(model_neural_network_2_reduced, "neural_network", 2, "reduced")
     J_neural_network_2_reduced = monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_neural_network_2_reduced)
     print(f"Expected return with neural network: {J_neural_network_2_reduced[-1]}")
     generate_gif(domain, model_neural_network_2_reduced, N, "neural_network", 2, "reduced")
     
     print("\n### NEURAL NETWORK STOP CRITERION 2 AND FULL SPACE ###")
-    model_neural_network_2_full = fitted_q_iteration("neural_network", osst_full, 2, BOUND)
+    model_neural_network_2_full = fitted_q_iteration("neural_network", osst_full, 2, BOUND_MODE_2)
     generate_result_plots(model_neural_network_2_full, "neural_network", 2, "full")
     J_neural_network_2_full = monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_neural_network_2_full)
     print(f"Expected return with neural network: {J_neural_network_2_full[-1]}")
