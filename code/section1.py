@@ -48,7 +48,7 @@ def generate_trajectory(domain, agent, N):
         u = agent.policy()
         r = domain.reward(p_prev, s_prev, u)
         p_next, s_next = domain.dynamics(p_prev, s_prev, u)
-        print(f"(x_{n} = ({p_prev:.4f}, {s_prev:.4f}), u_{n} = {u}, r_{n} = {r}, x_{n+1} = ({p_next:.4f}, {s_next:.4f}))")
+        print(f"(x_{n} = ({p_prev:.8f}, {s_prev:.8f}), u_{n} = {u}, r_{n} = {r}, x_{n+1} = ({p_next:.8f}, {s_next:.8f}))")
         p_prev = p_next
         s_prev = s_next
 
@@ -148,9 +148,13 @@ class Domain:
         p_next = p
         s_next = s
 
-        for t in range(DYNAMIC_STEP):
-            p_prime = s
-            s_prime = ((u) / (M*(1 + (self.hill_prime(p))**2))) - ((G * self.hill_prime(p))*(1 + (self.hill_prime(p))**2)) - ((s**2 * self.hill_prime(p) * self.hill_prime_prime(p))/((1 + (self.hill_prime(p))**2)))
+        for _ in range(DYNAMIC_STEP):
+            p_prime = s_next
+
+            s_prime = ((u) / (M * (1 + self.hill_prime(p_next)**2)))
+            s_prime -= ((G * self.hill_prime(p_next)) / (1 + self.hill_prime(p_next)**2))
+            s_prime -= ((s_next**2 * self.hill_prime(p_next) * self.hill_prime_prime(p_next)) / (1 + self.hill_prime(p_next)**2))
+
             p_next += INTEGRATION_STEP * p_prime
             s_next += INTEGRATION_STEP * s_prime
         
@@ -217,7 +221,7 @@ class Agent:
 ## MAIN
 def main():
     domain = Domain()
-    agent = Agent()
+    agent = Agent(randomized=True)
     generate_trajectory(domain, agent, N)
 
 if __name__ == "__main__":
