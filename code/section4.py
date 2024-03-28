@@ -201,7 +201,7 @@ def fitted_q_iteration(model_type, osst, stop_criterion_mode, bound):
         if N > 2:
             criterion = stop_criterion(model, model_prev, N, osst, stop_criterion_mode)
     
-    print(f"Model generated after {N} iterations", end="")
+    print(f"Model generated after {N} iterations")
     return model
 
 def expected_return_continuous(domain, N, model):
