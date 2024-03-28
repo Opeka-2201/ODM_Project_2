@@ -4,6 +4,7 @@
 # Section 3: Visualization
 
 ## IMPORTS
+import numpy as np
 import imageio.v3 as imageiov3
 import imageio
 from tqdm import tqdm
@@ -46,11 +47,11 @@ def generate_gif(Domain, Agent, N):
     for n in tqdm(range(N)):
         subfile = f"figures/gif/{RANDOMIZED}/{n+1}_{N}.jpg"
 
-        p = min(max(-TERMINAL_P, p), TERMINAL_P)
-        s = min(max(-TERMINAL_S, s), TERMINAL_S)
-
         save_caronthehill_image(p, s, subfile)
         images.append(imageiov3.imread(subfile))
+
+        if np.abs(p) >= TERMINAL_P or np.abs(s) >= TERMINAL_S:
+            break
 
         u = Agent.policy()
         p, s = Domain.dynamics(p, s, u)
