@@ -1,0 +1,5 @@
+model,generation_mode,stop_criterion,expected_return
+extra_trees,reduced,1,-0.6280855202667442
+extra_trees,full,1,-0.26700320547810924
+extra_trees,reduced,2,-0.022752003691058387
+extra_trees,full,2,-0.32570818804478285

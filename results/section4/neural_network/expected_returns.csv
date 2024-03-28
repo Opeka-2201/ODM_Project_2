@@ -1,0 +1,5 @@
+model,generation_mode,stop_criterion,expected_return
+neural_network,reduced,1,-0.23762326345897258
+neural_network,full,1,-0.3312850299672948
+neural_network,reduced,2,-0.7086408923538712
+neural_network,full,2,-0.428997238846675

@@ -1,0 +1,5 @@
+model,generation_mode,stop_criterion,expected_return
+linear_regression,reduced,1,-0.23762326345897258
+linear_regression,full,1,-0.19340479833476298
+linear_regression,reduced,2,-0.8573749999999997
+linear_regression,full,2,-0.32417504726974555
