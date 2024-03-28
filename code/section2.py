@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 ## CONSTANTS
 N = 500
 NB_INITIAL_STATES = 50
-RANDOMIZED = False # Change this to True to use a randomized policy instead of the always accelerate policy
+RANDOMIZED = True # Change this to True to use a randomized policy instead of the always accelerate policy
 
 ## IMPORTS FROM OTHER SECTIONS
 ## IMPORT CONSTANTS
@@ -50,8 +50,8 @@ def expected_return_continuous(Domain, Agent, N):
         p_next, s_next = Domain.dynamics(p, s, u)
         
         if p != p_next or s != s_next:
-            # If we are not in a terminal state, we continue accumulating 
-            # the expected return of the policy inside J
+        #     # If we are not in a terminal state, we continue accumulating 
+        #     # the expected return of the policy inside J
             J += (DISCOUNT_FACTOR ** n) * r
 
         p = p_next

@@ -80,9 +80,9 @@ class Domain:
                 The height of the hill at the given position
         """
         if p < 0:
-            return p**2 + p
+            return (p**2) + p
         else:
-            return p / np.sqrt(1 + 5*p**2)
+            return (p / (np.sqrt(1 + 5*p**2)))
     
     def hill_prime(self, p):
         """
@@ -99,9 +99,9 @@ class Domain:
                 The derivative of the height of the hill at the given position
         """
         if p < 0:
-            return 2*p + 1
+            return (2*p) + 1
         else:
-            return 1 / (1 + 5*p**2)**(3/2)
+            return ((1) / ((1 + 5*p**2)**(3/2)))
         
     def hill_prime_prime(self, p):
         """
@@ -120,7 +120,7 @@ class Domain:
         if p < 0:
             return 2
         else:
-            return -15*p / (1 + 5*p**2)**(5/2)
+            return ((-15*p) / ((1 + 5*p**2)**(5/2)))
         
     def dynamics(self, p, s, u):
         """
@@ -150,8 +150,7 @@ class Domain:
 
         for t in range(DYNAMIC_STEP):
             p_prime = s
-            s_prime = (u / M) - (G * self.hill_prime(p)) - (s**2 * self.hill_prime(p) * self.hill_prime_prime(p))
-            s_prime /= (1 + (self.hill_prime(p))**2)
+            s_prime = ((u) / (M*(1 + (self.hill_prime(p))**2))) - ((G * self.hill_prime(p))*(1 + (self.hill_prime(p))**2)) - ((s**2 * self.hill_prime(p) * self.hill_prime_prime(p))/((1 + (self.hill_prime(p))**2)))
             p_next += INTEGRATION_STEP * p_prime
             s_next += INTEGRATION_STEP * s_prime
         
@@ -211,7 +210,7 @@ class Agent:
                 The acceleration of the agent (-4 or 4)
         """
         if self.randomized:
-            return np.random.uniform(U[0], U[1])
+            return np.random.choice(U)
         else:
             return U[1]
     
