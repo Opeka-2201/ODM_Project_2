@@ -5,6 +5,7 @@
 
 ## IMPORTS
 import numpy as np
+np.random.seed(123)
 import imageio.v3 as imageiov3
 import imageio
 from tqdm import tqdm

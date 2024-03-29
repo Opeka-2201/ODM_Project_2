@@ -1,5 +1,5 @@
-model,generation_mode,stop_criterion,expected_return
-linear_regression,reduced,1,8.940714935194434e-12
-linear_regression,full,1,1.0778428856325864e-11
-linear_regression,reduced,2,4.874551124549632e-12
-linear_regression,full,2,9.016827449060727e-12
+model,generation_mode,stop_criterion,expected_return,iterations
+linear_regression,reduced,1,8.933780806843776e-12,95
+linear_regression,full,1,9.88491177957859e-12,76
+linear_regression,reduced,2,7.629914277286161e-12,189
+linear_regression,full,2,9.107791687461132e-12,189
