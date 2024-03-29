@@ -5,7 +5,7 @@
 
 ## IMPORTS
 import numpy as np
-np.random.seed(123)
+np.random.seed(0)
 import matplotlib.pyplot as plt
 
 ## CONSTANTS
@@ -60,16 +60,16 @@ def expected_return_continuous(Domain, Agent, N):
     
     return J_N
 
-def monte_carlo_simulations_continuous(Domain, Agent, nb_initial_states, N):
+def monte_carlo_simulations_continuous(randomized, domain_class, nb_initial_states, N):
     """
         This function computes the expected return of a policy over N steps in the continuous domain by averaging over several initial states.
 
         Parameters
         ----------
-        Domain : Domain
+        randomized : bool
+            Whether to use a randomized policy or the always accelerate policy
+        domain_class : Domain
             The domain in which the agent evolves
-        Agent : Agent
-            The agent that evolves in the domain
         nb_initial_states : int
             The number of initial states to average the expected return over
         N : int
@@ -82,22 +82,28 @@ def monte_carlo_simulations_continuous(Domain, Agent, nb_initial_states, N):
     """
     J_N = np.zeros(N)
     for _ in range(nb_initial_states):
-        J_N += expected_return_continuous(Domain, Agent, N)
+        domain = domain_class()
+        agent = Agent(randomized=randomized)
+        J_N += expected_return_continuous(domain, agent, N)
     J_N = J_N / nb_initial_states
     return J_N
 
 ## MAIN
 def main():
-    domain = Domain()
-    agent = Agent(randomized=RANDOMIZED)
-    J_N = monte_carlo_simulations_continuous(domain, agent, NB_INITIAL_STATES, N)
-    print("Final expected return of the policy:", J_N[-1])
+    N_test = [10, 50, 100, 500, 1000, 5000]
+    print("Upper bound of the expected return of the policy:")
+    for n in N_test:
+        norm = (DISCOUNT_FACTOR**n) / (1 - DISCOUNT_FACTOR)
+        print(f"{n}: {norm}")
+    
+    J_N = monte_carlo_simulations_continuous(RANDOMIZED, Domain, NB_INITIAL_STATES, N)
+    print("\nFinal expected return of the policy:", J_N[-1])
 
     plt.plot(J_N)
     plt.xlabel("Time step")
     plt.ylabel(f"Expected return over {NB_INITIAL_STATES} simulations")
-    plt.title(r"Evolution of $J^{\mu}_{" + str(N) + "}$ over " + str(NB_INITIAL_STATES) + " simulations for a " + ("random" if agent.randomized else "always accelerate") + " policy")
-    plt.savefig("figures/section2/expected_return_" + str(NB_INITIAL_STATES) + "_states_over_" + str(N) + "_steps_" + ("random" if agent.randomized else "accelerate") + ".png")
+    plt.title(r"Evolution of $J^{\mu}_{" + str(N) + "}$ over " + str(NB_INITIAL_STATES) + " simulations for a " + ("random" if RANDOMIZED else "always accelerate") + " policy")
+    plt.savefig("figures/section2/expected_return_" + str(NB_INITIAL_STATES) + "_states_over_" + str(N) + "_steps_" + ("random" if RANDOMIZED else "accelerate") + ".png")
 
 if __name__ == "__main__":
     main()

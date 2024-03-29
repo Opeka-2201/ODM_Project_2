@@ -8,7 +8,7 @@ import numpy as np
 np.random.seed(0)
 
 ## CONSTANTS
-N = 10
+N = 20
 U = [-4, 4]
 M = 1
 G = 9.81
@@ -17,6 +17,7 @@ INTEGRATION_STEP = 0.001
 DISCOUNT_FACTOR = 0.95
 TERMINAL_P = 1
 TERMINAL_S = 3
+RANDOMIZED = False
 
 ## DERIVED CONSTANTS
 DYNAMIC_STEP = int(TIME_STEP / INTEGRATION_STEP)
@@ -59,10 +60,13 @@ class Domain:
 
         Attributes
         ----------
-        None
+        terminate : bool
+            Whether the agent is in a terminal state
     """
 
     def __init__(self):
+        #self.terminate = False # uncomment when only launching section1, keep commented when launching any other section
+        ## Terminate behavior already implemented in the other sections
         pass
 
     def hill(self, p):
@@ -178,10 +182,18 @@ class Domain:
             int
                 The reward of the agent (-1, 0 or 1)
         """
+        # if self.terminate: # If the agent is in a terminal state, we always return 0
+        #      return 0
+
+        ## keep terminate commented when launching any other section uncomment when launching section1
+        ## Terminate behavior already implemented in the other sections
+
         p_next, s_next = self.dynamics(p, s, u)
         if p_next < -TERMINAL_P or np.abs(s_next) > TERMINAL_S:
+            #self.terminate = True
             return -1
         elif p_next > TERMINAL_P and np.abs(s_next) <= TERMINAL_S:
+            #self.terminate = True
             return 1
         else:
             return 0
@@ -221,7 +233,7 @@ class Agent:
 ## MAIN
 def main():
     domain = Domain()
-    agent = Agent(randomized=True)
+    agent = Agent(randomized=RANDOMIZED)
     generate_trajectory(domain, agent, N)
 
 if __name__ == "__main__":
