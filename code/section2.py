@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 ## CONSTANTS
 N = 500
 NB_INITIAL_STATES = 50
-RANDOMIZED = True # Change this to True to use a randomized policy instead of the always accelerate policy
+RANDOMIZED = False # Change this to True to use a randomized policy instead of the always accelerate policy
 
 ## IMPORTS FROM OTHER SECTIONS
 ## IMPORT CONSTANTS

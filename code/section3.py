@@ -37,7 +37,8 @@ def generate_gif(Domain, Agent, N):
         
         Returns
         ----------
-        None
+        n + 1 : int
+            The number of steps of the trajectory
     """
     filename = f"figures/section3/car_{N}_randomized_{RANDOMIZED}.gif"
     images = []
@@ -59,13 +60,19 @@ def generate_gif(Domain, Agent, N):
 
     imageio.mimsave(filename, images)
 
+    return n + 1
+
 ## MAIN
 def main():
     domain = Domain()
     agent = Agent(randomized=RANDOMIZED)
     agent.init_p = 0 # for this exercise we will fix the position of the car to 0
     agent.init_s = 0 # for this exercise we will fix the speed of the car to 0
-    generate_gif(domain, agent, N)
+    steps = generate_gif(domain, agent, N)
+    if steps == N:
+        print(f"Non-terminal Trajectory of {steps} steps saved in 'figures/section3/car_{N}_randomized_{RANDOMIZED}.gif")
+    else:
+        print(f"Terminal Trajectory of {steps} steps saved in 'figures/section3/car_{N}_randomized_{RANDOMIZED}.gif")
 
 if __name__ == "__main__":
     main()
