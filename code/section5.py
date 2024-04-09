@@ -5,7 +5,6 @@
 
 ## IMPORTS
 import numpy as np
-np.random.seed(123)
 import matplotlib.pyplot as plt
 import imageio.v3 as imageiov3
 import imageio
@@ -25,6 +24,8 @@ N = 500
 MAX_ITER = 189
 RANDOM_STATE = 123
 LR = 0.02
+
+np.random.seed(RANDOM_STATE)
 
 ## IMPORTS FROM OTHER SECTIONS
 ## IMPORT CONSTANTS
