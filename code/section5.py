@@ -281,6 +281,7 @@ def main() -> None:
     plt.plot(OSST_SIZES, return_parametric, label="Parametric Q-Learning")
     plt.xlabel("OSST size")
     plt.ylabel("Expected Return")
+    plt.xscale("log")
     plt.legend()
     plt.savefig("figures/section5/returns/fitted_vs_parametric.png")
     plt.close()
