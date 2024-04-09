@@ -5,7 +5,6 @@
 
 ## IMPORTS
 import numpy as np
-np.random.seed(123)
 import matplotlib.pyplot as plt
 import imageio.v3 as imageiov3
 import imageio
@@ -23,6 +22,8 @@ BOUND_MODE_1 = 0.005
 BOUND_MODE_2 = 0.05
 N = 500
 MAX_ITER = 1000
+
+np.random.seed(RANDOM_STATE)
 
 ## IMPORTS FROM OTHER SECTIONS
 ## IMPORT CONSTANTS

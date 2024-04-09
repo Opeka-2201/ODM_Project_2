@@ -10,6 +10,11 @@ import matplotlib.pyplot as plt
 import imageio.v3 as imageiov3
 import imageio
 from sklearn.neural_network import MLPRegressor
+import torch
+from torch import nn
+from torch.optim import Adam
+from torch.nn.functional import mse_loss
+from torch import tensor
 from tqdm import tqdm
 import csv
 
@@ -17,6 +22,9 @@ import csv
 OSST_SIZES = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000]
 MAX_LENGTH = 60
 N = 500
+MAX_ITER = 189
+RANDOM_STATE = 123
+LR = 0.02
 
 ## IMPORTS FROM OTHER SECTIONS
 ## IMPORT CONSTANTS
@@ -67,6 +75,30 @@ def generate_osst(agent: Agent, domain: Domain, osst_size: int) -> list:
         
     return osst
 
+def fitted_q_model(inputs: list, outputs: list) -> MLPRegressor:
+    """
+    Create the model used for the fitted Q-Iteration.
+
+    Parameters:
+    ------------
+    inputs: list
+        The inputs for the model
+    outputs: list
+        The outputs for the model
+    
+    Returns:
+    ------------
+    model: MLPRegressor
+        The model used for the fitted Q-Iteration
+    """
+    model = MLPRegressor(hidden_layer_sizes=(16, 32, 64, 32, 16, 8), max_iter=1000, random_state=RANDOM_STATE, activation="tanh")
+    
+    if inputs is not None and outputs is not None:
+        model.fit(inputs, outputs)
+
+    return model
+    
+
 def fitted_q_iteration(osst: list) -> MLPRegressor:
     """
     Perform the Fitted Q-Iteration algorithm on the given OSST.
@@ -81,10 +113,30 @@ def fitted_q_iteration(osst: list) -> MLPRegressor:
     model: MLPRegressor
         The model learned by the Fitted Q-Iteration
     """
-    pass
+    model = fitted_q_model(None, None)
 
+    for i in range(MAX_ITER):
+        print(f"Fitted-Q, OSST size = {len(osst)}, Iteration {str(i+1).zfill(3)} over {MAX_ITER}\r", end="")
+        inputs = []
+        outputs = []
 
-def parametric_q_learning(osst: list) -> MLPRegressor:
+        for (p, s), u, r, (p_next, s_next) in osst:
+            inputs.append([p, s, u])
+        
+            if i != 0:
+                fetch_max = max(model.predict(np.array([[p_next, s_next, U[0]]])), \
+                                model.predict(np.array([[p_next, s_next, U[1]]])))
+            else:
+                fetch_max = 0
+
+            outputs.append(r + DISCOUNT_FACTOR * fetch_max)
+
+        model = fitted_q_model(np.array(inputs).reshape(-1, 3), np.array(outputs).ravel())
+    
+    print("\n")
+    return model
+
+def parametric_q_learning(osst: list) -> nn.Module:
     """
     Perform the Parametric Q-Learning algorithm on the given OSST.
     
@@ -95,12 +147,48 @@ def parametric_q_learning(osst: list) -> MLPRegressor:
     
     Returns:
     ------------
-    model: MLPRegressor
+    model: nn.Module
         The model learned by the Parametric Q-Learning
     """
-    pass
 
-def expected_return_continuous(domain: Domain, N: int, model: MLPRegressor) -> np.array:
+    model = nn.Sequential(nn.Linear(3, 16), nn.Tanh(),
+                          nn.Linear(16, 32), nn.Tanh(),
+                          nn.Linear(32, 64), nn.Tanh(),
+                          nn.Linear(64, 32), nn.Tanh(),
+                          nn.Linear(32, 16), nn.Tanh(),
+                          nn.Linear(16, 8), nn.Tanh(),
+                          nn.Linear(8, 1), nn.Sigmoid())
+    
+    optimizer = Adam(model.parameters(), lr=LR)
+
+    for epoch in range(len(osst) - 1):
+        print(f"Parametric Q-Learning, OSST size = {len(osst)}, Epoch {epoch+1} over {len(osst)-1}\r", end="")
+        p, s = osst[epoch][0]
+        u = osst[epoch][1]
+        r = osst[epoch][2]
+        p_next, s_next = osst[epoch][3]
+        u_next = osst[epoch + 1][1]
+
+        in_torch = torch.FloatTensor([p, s, u])
+        r_torch = torch.FloatTensor([r])
+        next_torch = torch.FloatTensor([p_next, s_next, u_next])
+
+        q = model(in_torch)
+
+        with torch.no_grad():
+            q_next = model(next_torch)
+            target = torch.where(r_torch==0, DISCOUNT_FACTOR * q_next, r_torch)
+            delta_q = q - target
+        
+        loss = torch.mean(delta_q * q)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+    print("\n")
+    return model
+
+def expected_return_continuous(domain: Domain, N: int, model) -> np.array:
     """
     Computes the expected return of a policy over N steps in the continuous domain.
 
@@ -110,7 +198,7 @@ def expected_return_continuous(domain: Domain, N: int, model: MLPRegressor) -> n
         The domain in which the agent evolves
     N: int
         The horizon of the simulations
-    model: MLPRegressor
+    model: nn.Module or MLPRegressor
         The model used to predict the optimal action
     
     Returns:
@@ -124,7 +212,11 @@ def expected_return_continuous(domain: Domain, N: int, model: MLPRegressor) -> n
     J_N = np.zeros(N)
 
     for n in range(N-1):
-        u = max(U, key=lambda u: model.predict(np.array([[p, s, u]]))[0])
+        if isinstance(model, MLPRegressor):
+            u = max(U, key=lambda u: model.predict(np.array([[p, s, u]]))[0])
+        else:
+            u = max(U, key=lambda u: model(torch.Tensor([p, s, u]))[0])
+
         r = domain.reward(p, s, u)
         p_next, s_next = domain.dynamics(p, s, u)
 
@@ -137,7 +229,7 @@ def expected_return_continuous(domain: Domain, N: int, model: MLPRegressor) -> n
 
     return J_N
 
-def monte_carlo_simulations_continuous(domain: Domain, nb_initial_states: int, N: int, model: MLPRegressor) -> np.array:
+def monte_carlo_simulations_continuous(domain: Domain, nb_initial_states: int, N: int, model: nn.Module) -> np.array:
     """
     Perform Monte Carlo simulations in the continuous domain to approximate the expected return.
     
@@ -149,7 +241,7 @@ def monte_carlo_simulations_continuous(domain: Domain, nb_initial_states: int, N
         The number of initial states
     N: int
         The horizon of the simulations
-    model: MLPRegressor
+    model: nn.Module
         The model used to predict the optimal action
     
     Returns:
@@ -163,7 +255,7 @@ def monte_carlo_simulations_continuous(domain: Domain, nb_initial_states: int, N
     J_N /= nb_initial_states
     return J_N
 
-def generate_gif(domain: Domain, model: MLPRegressor, osst_size: int, N: int) -> int:
+def generate_gif(domain: Domain, model: nn.Module, osst_size: int, N: int) -> int:
     """
     Generate a GIF of the car evolving in the domain with the given model.
     
@@ -171,7 +263,7 @@ def generate_gif(domain: Domain, model: MLPRegressor, osst_size: int, N: int) ->
     ------------
     domain: Domain
         The domain in which the agent evolves
-    model: MLPRegressor
+    model: nn.Module
         The model used to predict the optimal action
     osst_size: int
         The number of samples in the OSST
@@ -197,21 +289,21 @@ def generate_gif(domain: Domain, model: MLPRegressor, osst_size: int, N: int) ->
 
         if np.abs(p) > TERMINAL_P or np.abs(s) > TERMINAL_S:
             break
-
-        u = max(U, key=lambda u: model.predict(np.array([[p, s, u]]))[0])
+        
+        u = max(U, key=lambda u: model(torch.Tensor([p, s, u]))[0])
         p, s = domain.dynamics(p, s, u)
 
     imageio.mimsave(filename, images)   
 
     return n + 1
 
-def generate_result_plots(model: MLPRegressor, osst_size: int) -> None:
+def generate_result_plots(model: nn.Module, osst_size: int) -> None:
     """
     Generate the plots for the results of the parametric Q-learning.
     
     Parameters:
     ------------
-    model: MLPRegressor
+    model: nn.Module
         The model used to predict the optimal action
     osst_size: int
         The number of samples in the OSST
@@ -222,10 +314,10 @@ def generate_result_plots(model: MLPRegressor, osst_size: int) -> None:
     x, y = np.meshgrid(p_range, s_range)
 
     for i, p in enumerate(p_range):
-        print(f"Computing Q: step {i} over {len(p_range)}\r", end="")
+        print(f"OSST size = {osst_size}, Computing Q: step {i} over {len(p_range)}\r", end="")
         for j, s in enumerate(s_range):
             for k, u in enumerate(U):
-                Q[i, j, k] = model.predict(np.array([[p, s, u]]))
+                Q[i, j, k] = model(torch.Tensor([p, s, u]))[0]
 
     map_0 = Q[:, :, 0].T
     fig, ax = plt.subplots()
@@ -259,7 +351,7 @@ def generate_result_plots(model: MLPRegressor, osst_size: int) -> None:
     ax.legend(handles=legend_elements)
     ax.set_xlim([-TERMINAL_P, TERMINAL_P])
     ax.set_ylim([-TERMINAL_S, TERMINAL_S])
-    ax.set_title(r"Optimal policy with parametric Q-Learning\n and OSST size = " + str(osst_size))
+    ax.set_title(r"Optimal policy with parametric Q-Learning" + "\n" + "and OSST size = " + str(osst_size))
     ax.set_xlabel("Position")
     ax.set_ylabel("Speed")
     plt.savefig(f"figures/section5/optimal/parametric_OSST_size_{osst_size}.png")
@@ -295,13 +387,14 @@ def main() -> None:
         model_fitted = fitted_q_iteration(osst)
         model_parametric = parametric_q_learning(osst)
 
-        return_fitted[i] = monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_fitted)
-        return_parametric[i] = monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_parametric)
+        print(f"Computing returns for OSST size = {osst_size}")
+        return_fitted[i] = monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_fitted)[-1]
+        return_parametric[i] = monte_carlo_simulations_continuous(domain, NB_INITIAL_STATES, N, model_parametric)[-1]
 
         steps = generate_gif(domain, model_parametric, osst_size, N)
         generate_result_plots(model_parametric, osst_size)
 
-        results.append((osst_size, steps, return_parametric[i][-1]))
+        results.append((osst_size, steps, return_parametric[i]))
 
     plt.plot(OSST_SIZES, return_fitted, label="Fitted Q-Iteration")
     plt.plot(OSST_SIZES, return_parametric, label="Parametric Q-Learning")
@@ -312,8 +405,8 @@ def main() -> None:
     plt.savefig("figures/section5/returns/fitted_vs_parametric.png")
     plt.close()
 
-    j_parametric = return_parametric[i][-1]
-    print(f"Expected return with parametric Q-learning: {j_parametric}")
+    j_parametric = return_parametric[i]
+    print(f"Final expected return with parametric Q-learning: {j_parametric}")
 
     dump_results(results)
 
