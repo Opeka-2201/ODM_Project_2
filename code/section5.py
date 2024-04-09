@@ -67,11 +67,37 @@ def generate_osst(agent: Agent, domain: Domain, osst_size: int) -> list:
         
     return osst
 
-def fitted_q_iteration(osst):
+def fitted_q_iteration(osst: list) -> MLPRegressor:
+    """
+    Perform the Fitted Q-Iteration algorithm on the given OSST.
+    
+    Parameters:
+    ------------
+    osst: list
+        The OSST used to perform the Fitted Q-Iteration
+    
+    Returns:
+    ------------
+    model: MLPRegressor
+        The model learned by the Fitted Q-Iteration
+    """
     pass
 
 
-def parametric_q_learning(osst):
+def parametric_q_learning(osst: list) -> MLPRegressor:
+    """
+    Perform the Parametric Q-Learning algorithm on the given OSST.
+    
+    Parameters:
+    ------------
+    osst: list
+        The OSST used to perform the Parametric Q-Learning
+    
+    Returns:
+    ------------
+    model: MLPRegressor
+        The model learned by the Parametric Q-Learning
+    """
     pass
 
 def expected_return_continuous(domain: Domain, N: int, model: MLPRegressor) -> np.array:
