@@ -30,7 +30,24 @@ from section1 import Domain, Agent
 from display_caronthehill import save_caronthehill_image
 
 ## FUNCTIONS
-def generate_osst(agent, domain, osst_size):
+def generate_osst(agent: Agent, domain: Domain, osst_size: int) -> list:
+    """
+    Generate an OSST of a given size with a given agent and domain.
+    
+    Parameters:
+    ------------
+    agent: Agent
+        The agent used to generate the OSST
+    domain: Domain
+        The domain in which the agent evolves
+    osst_size: int
+        The size of the OSST
+        
+    Returns:
+    ------------
+    osst: list
+        The OSST generated
+    """
     osst = []
 
     while len(osst) < osst_size:
