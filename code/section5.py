@@ -12,8 +12,6 @@ from sklearn.neural_network import MLPRegressor
 import torch
 from torch import nn
 from torch.optim import Adam
-from torch.nn.functional import mse_loss
-from torch import tensor
 from tqdm import tqdm
 import csv
 
