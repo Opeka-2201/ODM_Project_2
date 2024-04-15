@@ -1,5 +1,5 @@
 # INFO8003-1: Optimal Decision Making for Complex Problems
-## Project 1: Reinforcement Learning in a Discrete Domain
+## Project 2: Reinforcement Learning in a Continuous Domain
 ### Authors: Romain LAMBERMONT, Arthur LOUIS
 
 This project is part of the course of Optimal Decision Making for Complex Problems at the University of Liège. The course is given by Prof. Damien Ernst with the help of his teaching assistants Arthur Louette and Bardhyl Miftari. The goal of this project is to implement the car on the hill problem in a continuous domain and to solve it using reinforcement learning algorithms.
